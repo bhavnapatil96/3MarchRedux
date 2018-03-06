@@ -17,6 +17,7 @@ export const projectList=(state=[],action)=>{
             arr.splice(index,1);
             arr.splice(index,0,action.payload);
             return arr;
+
         default :
             return state;
     }

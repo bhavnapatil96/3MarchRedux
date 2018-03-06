@@ -3,7 +3,8 @@ import  React from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {deleteProject,addProject,updateProject} from "../actions/index";
-import {Modal,Table} from 'react-bootstrap'
+import {Modal,Table,Button} from 'react-bootstrap'
+let msg='',dt='',flag='asc';
 class Home extends React.Component{
     constructor(){
         super();
@@ -16,11 +17,17 @@ class Home extends React.Component{
             startDate:'',
             endDate:'',
             client:'',
-            id:''
+            id:'',
+            curr:1,
+            totoalRecords:3
         }
 
     }
     componentWillMount(){
+        if(!localStorage.getItem('token')){
+            this.props.history.push('/login');
+        }
+
         this.setState({
             data1:this.props.list
         })
@@ -36,21 +43,61 @@ class Home extends React.Component{
         })
         this.clearData();
     }
+    mypage=(no)=>{
+        //alert(no)
+        this.setState({curr:no})
+    }
+    handleEntry=(e)=>{
+        alert(e.target.value)
+        this.setState({
+            totoalRecords:e.target.value
+        })
+    }
+    sort=(e)=>{
+        if(flag==='asc') {
+            var key = e.target.id;
+
+            var myData = [].concat(this.state.data1.sort((a, b) => a[key] > b[key]));
+
+            console.log('Sorting', myData);
+            this.setState({
+                data1: myData
+            })
+            flag='desc'
+        }
+        else if(flag==='desc'){
+            var key = e.target.id;
+
+            var myData = [].concat(this.state.data1.sort((a, b) => a[key] < b[key]));
+
+            console.log('Sorting', myData);
+            this.setState({
+                data1: myData
+            })
+            flag='asc'
+        }
+    }
     addProject1=()=>{
-        console.log("AddData")
-      var formData=new FormData()
-        formData.append('name',this.state.name)
-        formData.append('startDate',this.state.startDate)
-        formData.append('endDate',this.state.endDate)
-        formData.append('client',this.state.client)
-        formData.append('pic',this.state.photo)
-        console.log(this.state)
-        this.props.addProject(formData);
-        this.clearData();
-        this.toggleActive();
+        dt=''
+        if(msg==='') {
+            console.log("AddData")
+            var formData = new FormData()
+            formData.append('name', this.state.name)
+            formData.append('startDate', this.state.startDate)
+            formData.append('endDate', this.state.endDate)
+            formData.append('client', this.state.client)
+            formData.append('pic', this.state.photo)
+            console.log(this.state)
+            this.props.addProject(formData);
+            this.clearData();
+            this.toggleActive();
+        }
+        else{
+            alert("Please Enter the Required Field")
+        }
     }
     editData=(project)=>{
-       alert(project.pic)
+       // alert(project.pic)
         this.setState({
             name:project.name,
             startDate:project.startDate,
@@ -62,6 +109,8 @@ class Home extends React.Component{
         this.setState({
             isEditing:true
         })
+        dt=this.state.startDate;
+
         //this.toggleActive();
 
     }
@@ -99,25 +148,68 @@ class Home extends React.Component{
         })
     }
 
+    validation=(e)=>{
+        msg='';
+        let val=e.target.value;
+        let nm=e.target.name;
+        if(val===''){
+            msg=nm+' Field is required'
+        }
+    }
 
     render(){
-        return(
-            <section>
 
-                <button onClick={this.toggleActive}>Add Project</button>
+        var pages=[];
+        let len=this.state.data1.length;
+        let page=Math.ceil(len/this.state.totoalRecords)
+        for(let i=1;i<=page;i++){
+             pages.push(i);
+        }
+
+
+        let lastRec=this.state.curr*this.state.totoalRecords;
+        let firstRec=lastRec-this.state.totoalRecords;
+        let totalRec=this.state.data1.slice(firstRec,lastRec);
+
+
+
+        var dt=new Date(this.state.startDate).toLocaleDateString();
+       // alert(dt)
+        return(
+            <div>
+            <fieldset>
+                <legend></legend>
+                <Table>
+                    <thead>
+                    <tr>
+                        <td>
+                            <select onChange={this.handleEntry}>
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                            </select>
+                        </td>
+                        <td>
+                            <Button bsStyle="primary" style={{"float":"right"}} onClick={this.toggleActive}>Add Project</Button>
+                        </td>
+                    </tr>
+                    </thead>
+                </Table>
+                <br/><br/><br/>
                 <Table hover border="1">
                     <thead>
                     <tr>
-                        <td>Name</td>
-                        <td>Start Date</td>
-                        <td>End Date</td>
-                        <td>Client</td>
+                    <td id="name" onClick={this.sort}>Name</td>
+                        <td id="startDate" onClick={this.sort}>Start Date</td>
+                        <td id="endDate" onClick={this.sort}>End Date</td>
+                        <td id="client" onClick={this.sort}>Client</td>
                         <td>Photo</td>
                         <td>Actions</td>
                     </tr>
                     </thead>
                     {
-                        this.state.data1.map((pr,i)=>{
+                        totalRec.map((pr,i)=>{
                             let date=pr.startDate;
                             let d=new Date(pr.startDate);
 
@@ -125,24 +217,31 @@ class Home extends React.Component{
                                 <tbody>
                                 <tr>
                                     <td>{pr.name}</td>
-                                    <td>{pr.startDate.format('MM/dd/yyyy')}</td>
-                                    <td>{pr.endDate}</td>
+                                    <td>{new Date(pr.startDate).toLocaleDateString()}</td>
+                                    <td>{new Date(pr.endDate).toLocaleDateString()}</td>
                                     <td>{pr.client}</td>
                                     <td><img src={'http://localhost:8989/upload/'+pr.pic} height="50px" width="50px"/></td>
-                                    <td><button onClick={()=>{this.deleteProject1(pr._id)}}>Delete</button>
-                                    <button onClick={()=>{
+                                    <td><Button onClick={()=>{this.deleteProject1(pr._id)}}>Delete</Button>
+                                    <Button onClick={()=>{
 
                                         this.toggleActive();
                                         this.editData(pr);
 
 
-                                    }}>Edit</button></td>
+                                    }}>Edit</Button></td>
 
                                 </tr>
                                 </tbody>
                             )
                         })
                     }
+                    <tr>
+                        <td style={{"margin-left":"10px"}} colSpan="6">
+                            {pages.map((p,i)=>{
+                                return <Button onClick={()=>this.mypage(p)}>{p}</Button>
+                            })}
+                        </td>
+                    </tr>
 
                 </Table>
 
@@ -152,35 +251,56 @@ class Home extends React.Component{
                         <Modal.Title>Project Management</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                            <form encType="multipart/form-data" onSubmit={(e)=>e.preventDefault()}>
-                                name
-                                <input type="text" name="name" value={this.state.name} onChange={(e)=>this.setState({name:e.target.value})}/><br/><br/>
-                                Start Date
-                                <input type="date" name="startDate" value="2018-09-09" onChange={(e)=>this.setState({startDate:e.target.value})}/><br/><br/>
-                                End Date
-                                <input type="date" name="endDate" value={this.state.endDate} onChange={(e)=>this.setState({endDate:e.target.value})}/><br/><br/>
-                                Client
-                                <input type="text" name="client" value={this.state.client} onChange={(e)=>this.setState({client:e.target.value})}/><br/><br/>
-                                Photo
-                                <img src={"http://localhost:8989/upload/"+this.state.photo}/>
-                                <input type="file" name="pic" onChange={(e)=>this.setState({photo:e.target.files[0]})}/><br/><br/>
-                                {
-                                    this.state.isEditing?
-                                        <input type="submit" onClick={this.updateProject1} value="Update"/>
+                        <form encType="multipart/form-data" onSubmit={(e)=>e.preventDefault()}>
 
-                                        :
-                                        <input type="submit" onClick={this.addProject1} value="Save"/>
+                        <Table>
 
-                                }
+                            <thead>
+                            <tr>
+                                <td colSpan="2"><p style={{"color":"red"}}>{msg}</p></td>
+                            </tr>
+                            <tr>
+                                <td>Name<span style={{"color":"red"}}>*</span></td>
+                                <td><input type="text" name="name" value={this.state.name} onChange={(e)=>{this.setState({name:e.target.value});this.validation(e)}}/><br/><br/></td>
+                            </tr>
+                            <tr>
+                                <td>Start Date</td>
+                                <td><input type="date" name="startDate" value={this.state.startDate} onChange={(e)=>this.setState({startDate:e.target.value})}/><br/><br/></td>
+                            </tr>
+                            <tr>
+                                <td>End Date</td>
+                                <td><input type="date"  name="endDate" value={this.state.endDate} onChange={(e)=>this.setState({endDate:e.target.value})}/><br/><br/></td>
+                            </tr>
+                            <tr>
+                                <td>Client<span style={{"color":"red"}}>*</span></td>
+                                <td><input type="text" name="client" value={this.state.client} onChange={(e)=>{this.setState({client:e.target.value});this.validation(e)}}/><br/><br/></td>
+                            </tr>
+                            <tr>
+                                <td>Photo</td>
+                                <td><img src={"http://localhost:8989/upload/"+this.state.photo} height="50px" width="50px"/>
+                                    <input type="file" name="pic" onChange={(e)=>this.setState({photo:e.target.files[0]})}/><br/><br/>
+                                    {
+                                        this.state.isEditing?
+                                            <Button bsStyle="primary" onClick={this.updateProject1} value="Update">Update</Button>
 
-                            </form>
+                                            :
+                                            <Button bsStyle="primary" onClick={this.addProject1} value="Save">Save</Button>
+
+                                    }
+                                    </td>
+                            </tr>
+                            </thead>
+                        </Table>
+                        </form>
+
+
                     </Modal.Body>
                     <Modal.Footer>
-
                         <button onClick={this.toggleActive}>Close</button>
                     </Modal.Footer>
                 </Modal>
-            </section>
+            </fieldset>
+            </div>
         )
     }
 }

@@ -45,3 +45,50 @@ export const updateProject=(obj)=>{
         })
     }
 }
+export const login=(obj)=>{
+    return(dispatch)=>{
+        axios.post('http://localhost:8989/user/loginp',obj).then((success)=>{
+            console.log('in login action',success.data,success.headers["x-auth"])
+
+            dispatch({
+                type:"LOGIN_USER",
+                payload:success
+            })
+        })
+    }
+}
+export const statelist=()=>{
+    return (dispatch)=>{
+        axios.get('http://localhost:8989/state/list').then((success)=>{
+            console.log('in state action',success.data)
+
+            dispatch({
+                type:"STATE_LIST",
+                payload:success.data
+            })
+        })
+    }
+}
+export const citylist=()=>{
+    return (dispatch)=>{
+        axios.get('http://localhost:8989/city/list').then((success)=>{
+            console.log('in city action',success.data)
+
+            dispatch({
+                type:"CITY_LIST",
+                payload:success.data
+            })
+        })
+    }
+}
+export const register=(obj)=>{
+    return(dispatch)=>{
+        axios.post('http://localhost:8989/user/add',obj).then((success)=>{
+            console.log('in add user action',success.data);
+            dispatch({
+                type:'REGISTER',
+                payload:success.data
+            })
+        })
+    }
+}
