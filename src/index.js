@@ -29,7 +29,7 @@ const Link=()=>{
                     <Button bsStyle="success" style={{"margin-left":"50px"}}><NavLink to="/logout">Logout</NavLink></Button>
 
                     :
-                    <Button bsStyle="success" style={{"margin-left":"50px"}}><NavLink to="/login">Login</NavLink></Button>
+                    <Button bsStyle="success" style={{"margin-left":"50px"}}><NavLink to="/">Login</NavLink></Button>
 
             }
             <br/><br/>

@@ -19,13 +19,15 @@ class Home extends React.Component{
             client:'',
             id:'',
             curr:1,
-            totoalRecords:3
+            totoalRecords:3,
+            searchArr:[],
+            isSearch:false,
         }
 
     }
     componentWillMount(){
         if(!localStorage.getItem('token')){
-            this.props.history.push('/login');
+            this.props.history.push('/');
         }
 
         this.setState({
@@ -98,10 +100,14 @@ class Home extends React.Component{
     }
     editData=(project)=>{
        // alert(project.pic)
+
+        let sdate=project.startDate.split("T");
+        let edate=project.endDate.split("T");
+
         this.setState({
             name:project.name,
-            startDate:project.startDate,
-            endDate:project.endDate,
+            startDate:sdate[0],
+            endDate:edate[0],
             client:project.client,
             photo:project.pic,
             id:project._id
@@ -109,7 +115,6 @@ class Home extends React.Component{
         this.setState({
             isEditing:true
         })
-        dt=this.state.startDate;
 
         //this.toggleActive();
 
@@ -157,6 +162,39 @@ class Home extends React.Component{
         }
     }
 
+    search=(e)=> {
+        e.preventDefault();
+        var key = e.target.value;
+        this.setState({
+            isSearch:true,
+            searchArr:[]
+        })
+
+        var temp=[]
+        this.state.data1.map((st,i)=>{
+            if(st.name.includes(key))
+            {
+                temp.push(st);
+            }
+            else if(st.client.includes(key))
+            {
+                temp.push(st);
+            }
+
+            if(key===""){
+                this.setState({
+                    isSearch:false
+                })
+            }
+        })
+        this.setState({
+            searchArr:temp
+        })
+
+        console.log('Serach Array',this.state.searchArr);
+
+    }
+
     render(){
 
         var pages=[];
@@ -191,6 +229,9 @@ class Home extends React.Component{
                             </select>
                         </td>
                         <td>
+                            <input type="text" name="searchText" onChange={this.search}/>
+                        </td>
+                        <td>
                             <Button bsStyle="primary" style={{"float":"right"}} onClick={this.toggleActive}>Add Project</Button>
                         </td>
                     </tr>
@@ -209,6 +250,35 @@ class Home extends React.Component{
                     </tr>
                     </thead>
                     {
+                        (this.state.isSearch)?
+
+                            this.state.searchArr.map((pr,i)=>{
+                                let date=pr.startDate;
+                                let d=new Date(pr.startDate);
+
+                                return(
+                                    <tbody>
+                                    <tr>
+                                        <td>{pr.name}</td>
+                                        <td>{new Date(pr.startDate).toLocaleDateString()}</td>
+                                        <td>{new Date(pr.endDate).toLocaleDateString()}</td>
+                                        <td>{pr.client}</td>
+                                        <td><img src={'http://localhost:8989/upload/'+pr.pic} height="50px" width="50px"/></td>
+                                        <td><Button onClick={()=>{this.deleteProject1(pr._id)}}>Delete</Button>
+                                            <Button onClick={()=>{
+
+                                                this.toggleActive();
+                                                this.editData(pr);
+
+
+                                            }}>Edit</Button></td>
+
+                                    </tr>
+                                    </tbody>
+                                )
+                            })
+
+                            :
                         totalRec.map((pr,i)=>{
                             let date=pr.startDate;
                             let d=new Date(pr.startDate);

@@ -3,6 +3,7 @@ import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux'
 import {statelist,citylist,register} from '../actions/index'
 import {Table,Button} from 'react-bootstrap'
+let msg='',invalid='';
 class Register extends React.Component{
     constructor(){
         super();
@@ -22,6 +23,7 @@ class Register extends React.Component{
     componentDidMount(){
         this.props.statelist();
         this.props.citylist();
+
     }
     componentWillReceiveProps(nextProps){
         // this.setState({
@@ -29,13 +31,45 @@ class Register extends React.Component{
         //
         // })
 
-        // if(nextProps.user){
-        //     this.props.history.push('/login')
-        // }
+        if(nextProps.user.length!==0){
+            //this.props.history.push('/')
+            window.location='/'
+        }
+       // console.log('User',nextProps.user)
+    }
+    validation=(e)=>{
+        msg=''
+        let val=e.target.value
+        let nm=e.target.name;
+        if(val==='')
+        {
+            msg=nm+"  Field is Required"
+        }
+    }
+    contactValidator=(e)=>{
+        invalid=''
+        let val=e.target.value
+        let nm=e.target.name;
+        let pat=/^\d{10}$/;
+        if(!val.match(pat))
+        {
+            invalid=" Enter digit Only"
+        }
+    }
+    emailValidator=(e)=>{
+        invalid=''
+        let val=e.target.value
+        let nm=e.target.name;
+        let pat=/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if(!val.match(pat))
+        {
+            invalid=" Enter Valid Email"
+        }
     }
     register1=(e)=>{
         e.preventDefault();
 
+        if(this.state.name!==''&& this.state.email!==''&&this.state.password!==''&&this.state.contact!==''){
             var obj={
                 name:this.state.name,
                 email:this.state.email,
@@ -45,28 +79,38 @@ class Register extends React.Component{
                 cityId:this.state.cityId
             }
             this.props.register(obj)
+        }
+        else
+        {
+            alert("Enter a required Fields");
+        }
+
     }
     render(){
         return(
            <div>
                <h1>Register Here</h1>
+               <form onSubmit={this.register1}>
                <Table bordered>
                    <thead>
+                   <tr><td colSpan="2"><span style={{"color":"red"}}>{msg}</span></td></tr>
+                   <tr><td colSpan="2"><span style={{"color":"red"}}>{invalid}</span></td></tr>
+
                         <tr>
-                            <td>Name</td>
-                            <td><input type="text" name="name" onChange={(e)=>{this.setState({name:e.target.value})}}/></td>
+                            <td>Name<span style={{"color":"red"}}>*</span></td>
+                            <td><input required="true" type="text" name="name" onChange={(e)=>{this.setState({name:e.target.value});this.validation(e)}}/></td>
                         </tr>
                         <tr>
-                            <td>Email</td>
-                            <td><input type="email" name="email" onChange={(e)=>{this.setState({email:e.target.value})}}/></td>
+                            <td>Email<span style={{"color":"red"}}>*</span></td>
+                            <td><input type="email" name="email" onChange={(e)=>{this.setState({email:e.target.value});this.validation(e);this.emailValidator(e)}}/></td>
                         </tr>
                         <tr>
-                            <td>Password</td>
-                            <td><input type="password" name="password" onChange={(e)=>{this.setState({password:e.target.value})}}/></td>
+                            <td>Password<span style={{"color":"red"}}>*</span></td>
+                            <td><input type="password" name="password" onChange={(e)=>{this.setState({password:e.target.value});this.validation(e)}}/></td>
                         </tr>
                         <tr>
-                            <td>Contact</td>
-                            <td><input type="text" name="contact" onChange={(e)=>{this.setState({contact:e.target.value})}}/></td>
+                            <td>Contact<span style={{"color":"red"}}>*</span></td>
+                            <td><input type="text" name="contact" onChange={(e)=>{this.setState({contact:e.target.value});this.validation(e);this.contactValidator(e)}}/></td>
                         </tr>
                         <tr>
                             <td>State</td>
@@ -101,11 +145,13 @@ class Register extends React.Component{
                         </tr>
                         <tr>
                             <td>
-                                <Button onClick={this.register1}>Submit</Button>
+                                <input type="submit" value="Save"/>
+                                {/*<Button onClick={this.register1}>Submit</Button>*/}
                             </td>
                         </tr>
                    </thead>
                </Table>
+               </form>
            </div>
 
         )

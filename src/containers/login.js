@@ -21,6 +21,7 @@ class Login extends React.Component{
     }
     componentWillReceiveProps(nextProps){
         msg=''
+        inValid=''
        alert(nextProps.data)
         if(nextProps.data!=='success'){
             //alert(nextProps.data)
